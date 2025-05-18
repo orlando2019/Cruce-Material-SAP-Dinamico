@@ -9,7 +9,7 @@ class GoogleAuth:
         # Cargar configuraciones desde secrets.toml
         self.client_id = st.secrets.get("client_id", "")
         self.client_secret = st.secrets.get("client_secret", "")
-        self.redirect_uri = st.secrets.get("redirect_url_test", "http://localhost:8501/")
+        self.redirect_uri = st.secrets.get("edirect_url", "https://cruce-material-sap-dinamico.streamlit.app/")
         self.auth_url = f"https://accounts.google.com/o/oauth2/auth"
         self.token_url = "https://oauth2.googleapis.com/token"
         self.scope = "openid email profile"
