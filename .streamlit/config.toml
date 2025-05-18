@@ -1,0 +1,8 @@
+[browser]
+serverAddress = "localhost"
+
+[server]
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+enableWebsocketCompression = false
