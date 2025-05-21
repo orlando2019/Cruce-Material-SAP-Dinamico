@@ -2,7 +2,7 @@
 serverAddress = "localhost"
 
 [server]
-enableCORS = false
+enableCORS = true
 enableXsrfProtection = true
 maxUploadSize = 200
 enableWebsocketCompression = false
