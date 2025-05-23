@@ -225,9 +225,9 @@ def login_page():
         return True
 
     # Mostrar página de login
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
 
-    with col2:
+    with col3:
         # Título y logo
         st.markdown(
             "<h1 style='text-align: center;'>📊 Sistema Cruce de Material SAP Dinámico</h1>",
@@ -253,9 +253,9 @@ def login_page():
             background-color: #4285f4;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             padding: 10px 20px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 500;
             cursor: pointer;
             display: flex;
@@ -270,7 +270,7 @@ def login_page():
         .auth-form {
             background-color: #f9f9f9;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-top: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
@@ -301,7 +301,8 @@ def login_page():
 
         # Pie de página
         st.markdown(
-            "<p style='text-align: center; margin-top: 40px; color: #888;'>© 2025 - Sistema de Gestión de Usuarios</p>",
+            """<p style='text-align: center; margin-top: 40px; color: #888;'>© 2025 - 
+                Sistema Cruce SAP - Orland Ospino H.</p>""",
             unsafe_allow_html=True,
         )
 
@@ -409,67 +410,62 @@ def admin_view():
                     }
                 )
 
-            # Crear columnas para mostrar la tabla y las acciones
-            col1, col2 = st.columns([2, 1])
+            # Mostrar la tabla de usuarios con más detalles
+            user_table = []
+            for username, data in users.items():
+                # Formatear la fecha de creación para mejor legibilidad
+                created_at = data.get("created_at", "Desconocido")
+                if created_at != "Desconocido":
+                    try:
+                        created_date = datetime.fromisoformat(created_at)
+                        created_at = created_date.strftime("%d/%m/%Y %H:%M")
+                    except Exception:
+                        pass  # Mantener el formato original si hay error
 
-            with col1:
-                # Mostrar la tabla de usuarios con más detalles
-                user_table = []
-                for username, data in users.items():
-                    # Formatear la fecha de creación para mejor legibilidad
-                    created_at = data.get("created_at", "Desconocido")
-                    if created_at != "Desconocido":
-                        try:
-                            created_date = datetime.fromisoformat(created_at)
-                            created_at = created_date.strftime("%d/%m/%Y %H:%M")
-                        except:
-                            pass  # Mantener el formato original si hay error
+                # Formatear la fecha de último login
+                last_login = data.get("last_login", "Nunca")
+                if last_login != "Nunca":
+                    try:
+                        login_date = datetime.fromisoformat(last_login)
+                        last_login = login_date.strftime("%d/%m/%Y %H:%M")
+                    except Exception:
+                        pass  # Mantener el formato original si hay error
 
-                    # Formatear la fecha de último login
-                    last_login = data.get("last_login", "Nunca")
-                    if last_login != "Nunca":
-                        try:
-                            login_date = datetime.fromisoformat(last_login)
-                            last_login = login_date.strftime("%d/%m/%Y %H:%M")
-                        except:
-                            pass  # Mantener el formato original si hay error
-
-                    user_table.append(
-                        {
-                            "Usuario": username,
-                            "Nombre": data.get("name", ""),
-                            "Email": data.get("email", ""),
-                            "Rol": data.get("role", "user"),
-                            "Habilitado": "Sí" if data.get("enabled", True) else "No",
-                            "Creado": created_at,
-                            "u00daltimo Login": last_login,
-                        }
-                    )
-
-                st.dataframe(user_table, use_container_width=True)
-
-            # Sección para editar usuarios
-            with col2:
-                st.subheader("Editar Usuario")
-
-                # Seleccionar usuario a editar
-                user_to_edit = st.selectbox(
-                    "Seleccionar Usuario", options=list(users.keys())
+                user_table.append(
+                    {
+                        "Usuario": username,
+                        "Nombre": data.get("name", ""),
+                        "Email": data.get("email", ""),
+                        "Rol": data.get("role", "user"),
+                        "Habilitado": "Sí" if data.get("enabled", True) else "No",
+                        "Creado": created_at,
+                        "Último Acceso": last_login,
+                    }
                 )
 
-                if user_to_edit:
-                    user_data = users[user_to_edit]
+            st.dataframe(user_table, use_container_width=True)
 
-                    # Mostrar fecha de creación
-                    created_at = user_data.get("created_at", "Desconocido")
-                    if created_at != "Desconocido":
-                        try:
-                            created_date = datetime.fromisoformat(created_at)
-                            created_at = created_date.strftime("%d/%m/%Y %H:%M")
-                        except Exception:
-                            pass
+            # Sección para editar usuarios
+            st.subheader("Editar Usuario")
 
-                    st.info(f"Creado: {created_at}")
+            # Seleccionar usuario a editar
+            user_to_edit = st.selectbox(
+                "Seleccionar Usuario", options=list(users.keys())
+            )
+
+            if user_to_edit:
+                user_data = users[user_to_edit]
+
+                # Mostrar fecha de creación
+                created_at = user_data.get("created_at", "Desconocido")
+                if created_at != "Desconocido":
+                    try:
+                        created_date = datetime.fromisoformat(created_at)
+                        created_at = created_date.strftime("%d/%m/%Y %H:%M")
+                    except Exception:
+                        pass
+
+                st.info(f"Creado: {created_at}")
 
             # Formulario para editar usuario
             if user_to_edit:
@@ -561,26 +557,403 @@ def admin_view():
 
 # Función para mostrar la aplicación principal
 def main_app():
-    """Muestra la aplicación principal"""
-    st.title("Aplicación Principal")
-    st.subheader(f"Bienvenido, {st.session_state.get('name', 'Usuario')}")
-
-    st.write(
-        "Esta es la aplicación principal a la que solo pueden acceder usuarios autenticados."
+    """Muestra la aplicación principal - Cruce de Material SAP Dinámico"""
+    import streamlit as st
+    from cruce_sap import (
+        cruce_material_sap_procesado_con_split,
+        to_excel_bytes,
+        limpiar_estado,
     )
-    st.write("Aquí puedes desarrollar la funcionalidad principal de tu aplicación.")
+    import pandas as pd
 
-    # Ejemplo de contenido
-    st.info(
-        "Esta es una aplicación de ejemplo para demostrar el sistema de autenticación y gestión de usuarios."
+    # Encabezado y botones de la interfaz
+    col_titulo, col_usuario = st.columns([4, 1])
+
+    with col_titulo:
+        st.title("📊 Aplicación de Cruce de Material SAP Dinámico")
+
+    with col_usuario:
+        # Mostrar información del usuario autenticado
+        if "email" in st.session_state and st.session_state.email:
+            st.write(f"👤 **Usuario:** {st.session_state.email}")
+
+    # Inicializar variables de session_state necesarias
+    if "uploaded_file_obj" not in st.session_state:
+        st.session_state.uploaded_file_obj = None
+    if "sheet_names" not in st.session_state:
+        st.session_state.sheet_names = []
+    if "df_desc_cols" not in st.session_state:
+        st.session_state.df_desc_cols = []
+    if "df_exist_cols" not in st.session_state:
+        st.session_state.df_exist_cols = []
+    if "df_result" not in st.session_state:
+        st.session_state.df_result = None
+    if "processed_successfully" not in st.session_state:
+        st.session_state.processed_successfully = False
+
+    # Botón para limpiar estado
+    if st.button(
+        "Limpiar Todo",
+        icon="🗑️",
+        key="btn_limpiar",
+        help="Limpiar Todo",
+        type="secondary",
+    ):
+        limpiar_estado()
+        st.rerun()
+
+    st.markdown("""
+    Sube tu archivo Excel, selecciona las hojas y mapea las columnas.
+    La aplicación ajustará el stock SAP progresivamente y dividirá las planillas si el stock es insuficiente.
+    """)
+
+    # --- IMPORTACIÓN Y PROCESAMIENTO DE ARCHIVOS ---
+    from cruce_sap import EXPECTED_COLS_DESC, EXPECTED_COLS_EXIST
+
+    uploaded_file = st.file_uploader(
+        "Carga tu archivo Excel",
+        type=["xlsx", "xls"],
+        key="file_uploader_widget_split",
     )
 
-    # Mostrar información del usuario
-    st.subheader("Información del Usuario")
-    st.write(f"**Usuario:** {st.session_state.get('username', '')}")
-    st.write(f"**Nombre:** {st.session_state.get('name', '')}")
-    st.write(f"**Email:** {st.session_state.get('email', '')}")
-    st.write(f"**Rol:** {st.session_state.get('role', '')}")
+    if uploaded_file:
+        if (
+            st.session_state.uploaded_file_obj is None
+            or uploaded_file.name != st.session_state.uploaded_file_obj.name
+        ):
+            st.session_state.uploaded_file_obj = uploaded_file
+            st.session_state.sheet_names = []
+            st.session_state.df_desc_cols = []
+            st.session_state.df_exist_cols = []
+            st.session_state.df_result = None
+            st.session_state.processed_successfully = False
+            for key_map in list(st.session_state.keys()):
+                if key_map.startswith("map_desc_") or key_map.startswith("map_exist_"):
+                    del st.session_state[key_map]
+            if "prev_sheet_desc" in st.session_state:
+                del st.session_state.prev_sheet_desc
+            if "prev_sheet_exist" in st.session_state:
+                del st.session_state.prev_sheet_exist
+            st.rerun()
+
+        try:
+            if not st.session_state.sheet_names:
+                xls = pd.ExcelFile(st.session_state.uploaded_file_obj)
+                st.session_state.sheet_names = xls.sheet_names
+        except Exception as e:
+            st.error(f"Error al leer el archivo Excel: {e}")
+            st.session_state.uploaded_file_obj = None
+            return
+
+        st.sidebar.header("1. Selección de Hojas")
+        default_idx_desc = 0
+        if st.session_state.sheet_names:
+            try:
+                default_idx_desc = [
+                    s.lower() for s in st.session_state.sheet_names
+                ].index("material por descargar")
+            except ValueError:
+                default_idx_desc = 0
+
+        selected_sheet_desc = st.sidebar.selectbox(
+            "Hoja 'Material por Descargar'",
+            st.session_state.sheet_names,
+            index=default_idx_desc,
+            key="sel_sheet_desc",
+        )
+
+        default_idx_exist = 0
+        if st.session_state.sheet_names:
+            try:
+                default_idx_exist = [
+                    s.lower() for s in st.session_state.sheet_names
+                ].index("existencia")
+            except ValueError:
+                default_idx_exist = 1 if len(st.session_state.sheet_names) > 1 else 0
+        selected_sheet_exist = st.sidebar.selectbox(
+            "Hoja 'Existencia SAP'",
+            st.session_state.sheet_names,
+            index=default_idx_exist,
+            key="sel_sheet_exist",
+        )
+
+        try:
+            if selected_sheet_desc and (
+                not st.session_state.df_desc_cols
+                or st.session_state.get("prev_sheet_desc") != selected_sheet_desc
+            ):
+                df_temp_desc = pd.read_excel(
+                    st.session_state.uploaded_file_obj,
+                    sheet_name=selected_sheet_desc,
+                    dtype=str,
+                )
+                st.session_state.df_desc_cols = [""] + df_temp_desc.columns.tolist()
+                st.session_state.prev_sheet_desc = selected_sheet_desc
+
+            if selected_sheet_exist and (
+                not st.session_state.df_exist_cols
+                or st.session_state.get("prev_sheet_exist") != selected_sheet_exist
+            ):
+                df_temp_exist = pd.read_excel(
+                    st.session_state.uploaded_file_obj,
+                    sheet_name=selected_sheet_exist,
+                    dtype=str,
+                )
+                st.session_state.df_exist_cols = [""] + df_temp_exist.columns.tolist()
+                st.session_state.prev_sheet_exist = selected_sheet_exist
+        except Exception as e:
+            st.error(f"Error al leer las columnas de las hojas: {e}")
+            return
+
+        st.sidebar.header("2. Mapeo de Columnas")
+        user_mappings_desc = {}
+        user_mappings_exist = {}
+
+        st.sidebar.markdown("**Hoja 'Material por Descargar':**")
+        for key_internal, expected_col_name_std in EXPECTED_COLS_DESC.items():
+            default_index = 0
+            if st.session_state.df_desc_cols:
+                try:
+                    default_index = st.session_state.df_desc_cols.index(
+                        expected_col_name_std
+                    )
+                except ValueError:
+                    try:
+                        default_index = [
+                            c.lower() for c in st.session_state.df_desc_cols
+                        ].index(expected_col_name_std.lower())
+                    except ValueError:
+                        original_common_name = ""
+                        if key_internal == "item_id_desc":
+                            original_common_name = "Item"
+                        elif key_internal == "material_code":
+                            original_common_name = "MATERIAL"
+                        elif key_internal == "description_desc":
+                            # Para descripcion buscamos primero Texto breve de
+                            # material si existe
+                            try:
+                                if (
+                                    "Texto breve de material"
+                                    in st.session_state.df_desc_cols
+                                ):
+                                    original_common_name = "Texto breve de material"
+                                else:
+                                    original_common_name = "Descripción"
+                            except Exception:
+                                original_common_name = "Descripción"
+                        elif key_internal == "codigo_obra_sgt":
+                            # Para codigo de obra buscamos varias opciones
+                            # comunes
+                            try:
+                                if "CODIGO OBRA SGT" in st.session_state.df_desc_cols:
+                                    original_common_name = "CODIGO OBRA SGT"
+                                elif "CODIGO OBRA" in st.session_state.df_desc_cols:
+                                    original_common_name = "CODIGO OBRA"
+                                elif "Descripción" in st.session_state.df_desc_cols:
+                                    original_common_name = "Descripción"
+                                else:
+                                    original_common_name = ""
+                            except Exception:
+                                original_common_name = ""
+                        elif key_internal == "planilla_name":
+                            original_common_name = "NOMBRE PLANILLA"
+                        elif key_internal == "quantity_planilla":
+                            original_common_name = "Cantidad"
+                        if original_common_name:
+                            try:
+                                default_index = st.session_state.df_desc_cols.index(
+                                    original_common_name
+                                )
+                            except ValueError:
+                                try:
+                                    default_index = [
+                                        c.lower() for c in st.session_state.df_desc_cols
+                                    ].index(original_common_name.lower())
+                                except ValueError:
+                                    default_index = 0
+                        else:
+                            default_index = 0
+            # Usar colecciones estándar sin agregar columnas falsas que puedan
+            # causar problemas
+            user_col_selection = st.sidebar.selectbox(
+                f"{expected_col_name_std} (Descarga):",
+                st.session_state.df_desc_cols,
+                index=default_index,
+                key=f"map_desc_{key_internal}",
+            )
+            if user_col_selection:
+                user_mappings_desc[expected_col_name_std] = user_col_selection
+
+        st.sidebar.markdown("**Hoja 'Existencia SAP':**")
+        for key_internal, expected_col_name_std in EXPECTED_COLS_EXIST.items():
+            default_index = 0
+            if st.session_state.df_exist_cols:
+                try:
+                    default_index = st.session_state.df_exist_cols.index(
+                        expected_col_name_std
+                    )
+                except ValueError:
+                    try:
+                        default_index = [
+                            c.lower() for c in st.session_state.df_exist_cols
+                        ].index(expected_col_name_std.lower())
+                    except ValueError:
+                        original_common_name = ""
+                        if key_internal == "item_id_exist":
+                            original_common_name = "Item"  # O 'ITEM'
+                        elif key_internal == "description_exist":
+                            original_common_name = "Texto breve de material"
+                        elif key_internal == "stock_sap_qty":
+                            original_common_name = "Libre utilización"
+                        if original_common_name:
+                            try:
+                                default_index = st.session_state.df_exist_cols.index(
+                                    original_common_name
+                                )
+                            except ValueError:
+                                try:
+                                    default_index = [
+                                        c.lower()
+                                        for c in st.session_state.df_exist_cols
+                                    ].index(original_common_name.lower())
+                                except ValueError:
+                                    default_index = 0
+                        else:
+                            default_index = 0
+            user_col_selection = st.sidebar.selectbox(
+                f"{expected_col_name_std} (Existencia):",
+                st.session_state.df_exist_cols,
+                index=default_index,
+                key=f"map_exist_{key_internal}",
+            )
+            if user_col_selection:
+                user_mappings_exist[expected_col_name_std] = user_col_selection
+
+        all_desc_mapped = len(user_mappings_desc) == len(EXPECTED_COLS_DESC)
+        all_exist_mapped = len(user_mappings_exist) == len(EXPECTED_COLS_EXIST)
+        if not all_desc_mapped:
+            st.sidebar.warning(
+                "Mapea todas las columnas para 'Material por Descargar'."
+            )
+        if not all_exist_mapped:
+            st.sidebar.warning("Mapea todas las columnas para 'Existencia SAP'.")
+
+        if st.button(
+            "🚀 Procesar Cruce (con Split)",
+            type="primary",
+            key="process_button_split_key",
+            disabled=not (all_desc_mapped and all_exist_mapped),
+        ):
+            st.session_state.processed_successfully = False
+            st.session_state.df_result = None
+            with st.spinner("Procesando con división de líneas..."):
+                try:
+                    df_desc_original = pd.read_excel(
+                        st.session_state.uploaded_file_obj,
+                        sheet_name=selected_sheet_desc,
+                        dtype=str,
+                    )
+                    df_exist_original = pd.read_excel(
+                        st.session_state.uploaded_file_obj,
+                        sheet_name=selected_sheet_exist,
+                        dtype=str,
+                    )
+
+                    df_desc_std = pd.DataFrame()
+                    for expected_name_std, user_col_name in user_mappings_desc.items():
+                        # Manejar el caso especial cuando se selecciona 'Texto breve de material'
+                        # pero esa columna no existe en los datos originales
+                        if (
+                            user_col_name == "Texto breve de material"
+                            and user_col_name not in df_desc_original.columns
+                        ):
+                            # Si no existe, usamos una columna vacía
+                            df_desc_std[expected_name_std] = ""
+                        else:
+                            df_desc_std[expected_name_std] = df_desc_original[
+                                user_col_name
+                            ]
+
+                    df_exist_std = pd.DataFrame()
+                    for expected_name_std, user_col_name in user_mappings_exist.items():
+                        df_exist_std[expected_name_std] = df_exist_original[
+                            user_col_name
+                        ]
+
+                    # *** LLAMADA A LA NUEVA LÓGICA ***
+                    st.session_state.df_result = cruce_material_sap_procesado_con_split(
+                        df_desc_std, df_exist_std
+                    )
+
+                    if st.session_state.df_result is not None:
+                        st.session_state.processed_successfully = True
+                    else:
+                        st.error(
+                            "El procesamiento (con split) falló o no generó un DataFrame."
+                        )
+                except Exception as e:
+                    st.error(f"Error crítico durante el procesamiento (con split): {e}")
+                    import traceback
+
+                    st.error(traceback.format_exc())
+                    st.session_state.df_result = None
+                    st.session_state.processed_successfully = False
+
+    # --- Mostrar resultados ---
+    if (
+        st.session_state.processed_successfully
+        and st.session_state.df_result is not None
+    ):
+        if not st.session_state.df_result.empty:
+            st.success("✅ ¡Proceso con división de líneas completado!")
+            st.subheader("📋 Vista Previa del Resultado")
+            # Mostrar más filas por si hay splits
+            st.dataframe(st.session_state.df_result.head(30))
+
+            st.subheader("📊 Resumen del Resultado")
+            col_res1, col_res2, col_res3 = st.columns(3)
+            col_res1.metric("Total de Filas Generadas", len(st.session_state.df_result))
+            if "Diferencia" in st.session_state.df_result.columns:
+                sum_diferencia = pd.to_numeric(
+                    st.session_state.df_result["Diferencia"], errors="coerce"
+                ).sum()
+                col_res2.metric("Suma Total de 'Diferencia'", f"{sum_diferencia:,.0f}")
+            if "Descargable" in st.session_state.df_result.columns:
+                desc_si_count = (
+                    st.session_state.df_result["Descargable"] == "Si"
+                ).sum()
+                desc_no_count = (  # noqa: F841
+                    st.session_state.df_result["Descargable"] == "No"
+                ).sum()
+                col_res3.metric("Descargable 'Sí'", desc_si_count)
+                # Podríamos añadir otra métrica para 'No' si es relevante
+
+            excel_bytes = to_excel_bytes(st.session_state.df_result)
+            st.download_button(
+                label="📥 Descargar Resultado (con Split) como Excel",
+                data=excel_bytes,
+                file_name="Cruce_Material_SAP_Split_Streamlit.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="download_button_split_key",
+            )
+        else:
+            st.warning(
+                "⚠️ El proceso se completó, pero el DataFrame resultante está vacío. Revisa datos y mapeos."
+            )
+            st.dataframe(st.session_state.df_result)
+    elif (
+        st.session_state.uploaded_file_obj
+        and not st.session_state.processed_successfully
+        and st.session_state.df_result is None
+        and st.session_state.get("process_button_split_key")
+    ):
+        st.error(
+            "❌ El procesamiento (con split) no pudo completarse. Revisa mensajes."
+        )
+    if not st.session_state.uploaded_file_obj:
+        st.info("Por favor, carga un archivo Excel.")
+
+    st.markdown("---")
 
 
 # Función principal que controla la navegación y flujo de la aplicación
@@ -605,7 +978,7 @@ def main():
 
         # Añadir opción de administración solo para administradores
         if auth.is_admin():
-            app_options.insert(0, "Registrarse / Gestión Admin")
+            app_options.insert(0, "Registrar Usuario / Gestión Admin")
 
         # Selector de navegación
         navigation = st.radio("Ir a:", app_options)
@@ -614,7 +987,7 @@ def main():
         get_logout_button()
 
     # Mostrar la vista correspondiente según la navegación
-    if navigation == "Registrarse / Gestión Admin":
+    if navigation == "Registrar Usuario / Gestión Admin":
         admin_view()
     else:  # Aplicación Principal
         main_app()
