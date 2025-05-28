@@ -4,10 +4,16 @@ import hashlib
 import json
 import os
 from datetime import datetime
+import pandas as pd
+import tempfile
+from inventory_processor import InventoryProcessor
 
 # Configuración de la página (DEBE ser la primera instrucción de Streamlit)
 st.set_page_config(
-    layout="wide", page_title="Cruce de Material SAP Dinámico", page_icon="🧊"
+    layout="wide",
+    page_title="Cruce de Material SAP Dinámico",
+    page_icon="🧊",
+    initial_sidebar_state="expanded",
 )
 
 
@@ -956,6 +962,95 @@ def main_app():
     st.markdown("---")
 
 
+# Interfaz de Cruce de Inventario
+def inventory_ui():
+    st.header("📦 Cruce de Inventario")
+    master_file = st.file_uploader(
+        "Archivo Maestro (.xlsx)", type="xlsx", key="master_file"
+    )
+    dynamic_file = st.file_uploader(
+        "Archivo Dinámico (.xlsx)", type="xlsx", key="dynamic_file"
+    )
+    observation = st.text_input("Observación", key="obs")
+    new_work_order = st.text_input("Nueva Obra", key="new_wo")
+    new_job_number = st.text_input("Nuevo Trabajo", key="new_jn")
+    if st.button("Procesar Inventario", key="btn_proc_inv"):
+        if (
+            not master_file
+            or not dynamic_file
+            or not observation
+            or not new_work_order
+            or not new_job_number
+        ):
+            st.error("Completa todos los campos.")
+        else:
+            with (
+                tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as mf,
+                tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as df,
+                tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as out,
+            ):
+                mf.write(master_file.getbuffer())
+                df.write(dynamic_file.getbuffer())
+                mf.flush()
+                df.flush()
+                proc = InventoryProcessor(
+                    mf.name,
+                    df.name,
+                    out.name,
+                    observation,
+                    new_work_order,
+                    new_job_number,
+                )
+                proc.run()
+                res_df = pd.read_excel(out.name)
+                st.success("✅ Inventario cruzado generado")
+                # Formatear columnas de fecha a dd/mm/yyyy
+                date_cols = [c for c in res_df.columns if "FECHA" in c.upper()]
+                for col in date_cols:
+                    res_df[col] = (
+                        pd.to_datetime(res_df[col], dayfirst=True, errors="coerce")
+                        .dt.strftime("%d/%m/%Y")
+                        .fillna("")
+                    )
+                # Paginación de la tabla
+                import math
+
+                page_size = st.number_input(
+                    "Filas por página",
+                    min_value=1,
+                    max_value=100,
+                    value=50,
+                    step=1,
+                    key="inv_page_size",
+                )
+                total_rows = len(res_df)
+                total_pages = math.ceil(total_rows / page_size) if total_rows else 1
+                page = st.number_input(
+                    "Página",
+                    min_value=1,
+                    max_value=total_pages,
+                    value=1,
+                    step=1,
+                    key="inv_page",
+                )
+                start = (page - 1) * page_size
+                end = start + page_size
+                st.write(
+                    f"Mostrando filas {start + 1} a {min(end, total_rows)} de {total_rows}"
+                )
+                st.dataframe(res_df.iloc[start:end])
+                from cruce_sap import to_excel_bytes
+
+                excel_bytes = to_excel_bytes(res_df)
+                st.download_button(
+                    "📥 Descargar Inventario Cruzado",
+                    excel_bytes,
+                    file_name="inventario_cruzado.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="download_inv",
+                )
+
+
 # Función principal que controla la navegación y flujo de la aplicación
 def main():
     """Función principal que controla la navegación y flujo de la aplicación"""
@@ -974,7 +1069,7 @@ def main():
         st.write(f"Usuario: **{st.session_state.get('name', 'Usuario')}**")
 
         # Opciones de navegación
-        app_options = ["Aplicación Principal"]
+        app_options = ["Aplicación Principal", "Cruce Inventario"]
 
         # Añadir opción de administración solo para administradores
         if auth.is_admin():
@@ -989,6 +1084,8 @@ def main():
     # Mostrar la vista correspondiente según la navegación
     if navigation == "Registrar Usuario / Gestión Admin":
         admin_view()
+    elif navigation == "Cruce Inventario":
+        inventory_ui()
     else:  # Aplicación Principal
         main_app()
 
