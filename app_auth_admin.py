@@ -7,6 +7,7 @@ from datetime import datetime
 import pandas as pd
 import tempfile
 from inventory_processor import InventoryProcessor
+from excel_ui import ExcelUI
 
 # Configuración de la página (DEBE ser la primera instrucción de Streamlit)
 st.set_page_config(
@@ -22,8 +23,8 @@ class UserAuth:
     def __init__(self):
         # Ruta al archivo de usuarios
         self.users_file = "users.json"
-        # Configuración de tiempo de inactividad (5 minutos = 300 segundos)
-        self.session_timeout = 300
+        # Configuración de tiempo de inactividad (11 minutos = 700 segundos)
+        self.session_timeout = 700
 
         # Inicializar el tiempo de la última actividad si no existe
         if "last_activity_time" not in st.session_state:
@@ -1051,6 +1052,18 @@ def inventory_ui():
                 )
 
 
+# --- Interfaz de Visor de Excel ---
+def excel_viewer():
+    """
+    Muestra el visor de archivos Excel.
+    """
+    try:
+        excel_ui = ExcelUI()
+        excel_ui.render_ui()
+    except Exception as e:
+        st.error(f"Error inesperado: {str(e)}")
+
+
 # Función principal que controla la navegación y flujo de la aplicación
 def main():
     """Función principal que controla la navegación y flujo de la aplicación"""
@@ -1069,7 +1082,7 @@ def main():
         st.write(f"Usuario: **{st.session_state.get('name', 'Usuario')}**")
 
         # Opciones de navegación
-        app_options = ["Aplicación Principal", "Cruce Inventario"]
+        app_options = ["Aplicación Principal", "Cruce Inventario", "Visor de Excel"]
 
         # Añadir opción de administración solo para administradores
         if auth.is_admin():
@@ -1086,6 +1099,8 @@ def main():
         admin_view()
     elif navigation == "Cruce Inventario":
         inventory_ui()
+    elif navigation == "Visor de Excel":
+        excel_viewer()
     else:  # Aplicación Principal
         main_app()
 
