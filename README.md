@@ -120,7 +120,7 @@ Para soporte, por favor abre un issue en el repositorio o contacta al equipo de 
 
 ---
 
-Desarrollado con ❤️ por [Tu Nombre] - [@tucuenta](https://github.com/tucuenta)
+Desarrollado con ❤️ por Orlando Opsino H- [@tucuenta](https://github.com/orlando2019)
    streamlit run main.py
    ```
 
