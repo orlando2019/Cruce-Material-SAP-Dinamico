@@ -120,8 +120,7 @@ Para soporte, por favor abre un issue en el repositorio o contacta al equipo de 
 
 ---
 
-Desarrollado con ❤️ por Orlando Opsino H- [@tucuenta](https://github.com/orlando2019)
-   streamlit run main.py
+Desarrollado con ❤️ por Orlando Opsino H- [@orlando2019](https://github.com/orlando2019)
    ```
 
 ## Estructura de Archivos
